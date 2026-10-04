@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ndege Smartlink | Secure Registration & Admin Portal</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- SheetJS (xlsx) for Excel export -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <!-- Signature Pad -->
+    <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.7/dist/signature_pad.umd.min.js"></script>
+    <!-- Google Fonts Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-50 via-indigo-50/35 to-slate-100 min-h-screen text-slate-800">
+
+    <!-- Navigation Header -->
+    <header class="bg-indigo-700 shadow-lg sticky top-0 z-50 backdrop-blur-md bg-indigo-700/95">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-11 h-11 bg-white/15 rounded-xl flex items-center justify-center text-white font-bold text-xl shadow-inner">NS</div>
+                <div>
+                    <span class="text-white font-bold text-lg tracking-tight block">SMART CHECK </span>
+                    <span class="text-indigo-200 text-xs font-medium">Registration & Admin Suite</span>
+                </div>
+            </div>
+            <nav class="flex items-center space-x-2 bg-indigo-900/30 p-1.5 rounded-xl border border-indigo-500/30">
+                <button id="navFormBtn" onclick="switchTab('form')" class="px-4 py-2 rounded-lg text-sm font-semibold bg-white text-indigo-700 shadow-sm transition-all duration-200">
+                    Data Entry Form
+                </button>
+                <button id="navAdminBtn" onclick="switchTab('admin')" class="px-4 py-2 rounded-lg text-sm font-semibold text-indigo-100 hover:text-white transition-all duration-200">
+                    Admin Portal
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <main class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+
+        <!-- ================= SECTION 1: PUBLIC FORM ================= -->
+        <div id="formSection" class="transition-all duration-300">
+            <div class="bg-white shadow-2xl rounded-3xl overflow-hidden border border-slate-100 max-w-2xl mx-auto">
+                <div class="bg-gradient-to-r from-indigo-600 via-indigo-700 to-violet-800 px-8 py-8 text-white relative">
+                    <div class="absolute right-6 top-6 opacity-10">
+                        <svg class="w-24 h-24" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+                    </div>
+                    <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight">Participant Registration</h1>
+                    <p class="text-indigo-100 text-sm mt-1.5">Please fill in your details, graduation status, and sign below.</p>
+                </div>
+
+                <div class="p-8 sm:p-10">
+                    <form id="publicForm" class="space-y-6">
+                        <div>
+                            <label for="fullName" class="block text-sm font-semibold text-slate-700 mb-1.5">Full Name</label>
+                            <input type="text" id="fullName" required 
+                                class="shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-slate-300 rounded-xl p-3.5 border bg-slate-50/50 transition"
+                                placeholder="e.g. DOMINIC KIBEN">
+                        </div>
+
+                        <div>
+                            <label for="regNumber" class="block text-sm font-semibold text-slate-700 mb-1.5">Registration Number</label>
+                            <input type="text" id="regNumber" required 
+                                class="shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-slate-300 rounded-xl p-3.5 border bg-slate-50/50 transition"
+                                placeholder="ED12/00000/20">
+                        </div>
+
+                        <div>
+                            <label for="contact" class="block text-sm font-semibold text-slate-700 mb-1.5">Contact (Phone / Email)</label>
+                            <input type="text" id="contact" required 
+                                class="shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-slate-300 rounded-lg p-3.5 border bg-slate-50/50 transition"
+                                placeholder="e.g. +254 712 345 678">
+                        </div>
+
+                        <div>
+                            <label for="graduationStatus" class="block text-sm font-semibold text-slate-700 mb-1.5">Ready for Graduation</label>
+                            <select id="graduationStatus" required 
+                                class="shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-slate-300 rounded-xl p-3.5 border bg-slate-50/50 transition">
+                                <option value="" disabled selected>-- Select Status --</option>
+                                <option value="Ready">Ready</option>
+                                <option value="Not Ready">Not Ready</option>
+                            </select>
+                        </div>
+                           
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 mb-1.5">Signature</label>
+                            <div class="border-2 border-dashed border-slate-300 rounded-2xl bg-slate-50/80 p-3">
+                                <canvas id="signatureCanvas" class="w-full h-44 bg-white rounded-xl border border-slate-200 cursor-crosshair touch-none shadow-sm"></canvas>
+                                <div class="flex justify-between items-center mt-3 px-2">
+                                    <span class="text-xs font-medium text-slate-500 flex items-center gap-1">
+                                        <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
+                                        Sign inside the box above
+                                    </span>
+                                    <button type="button" id="clearSignature" class="text-xs font-bold text-rose-600 hover:text-rose-800 transition px-2 py-1 bg-rose-50 rounded-lg">Clear Signature</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="successAlert" class="hidden p-4 bg-emerald-50 border border-emerald-200 rounded-2xl text-emerald-800 text-sm font-semibold flex items-center space-x-3 shadow-sm">
+                            <svg class="w-5 h-5 text-emerald-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                            <span>Form submitted successfully! Your details have been securely recorded.</span>
+                        </div>
+
+                        <div class="flex items-center justify-end space-x-4 pt-6 border-t border-slate-100">
+                            <button type="button" id="resetFormBtn" class="px-5 py-3 border border-slate-300 rounded-xl text-sm font-semibold text-slate-700 hover:bg-slate-100 transition">
+                                Reset Form
+                            </button>
+                            <button type="submit" class="inline-flex justify-center py-3 px-8 border border-transparent shadow-lg text-sm font-semibold rounded-xl text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-200 shadow-indigo-200">
+                                Submit Details
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= SECTION 2: ADMIN PORTAL ================= -->
+        <div id="adminSection" class="hidden space-y-6 transition-all duration-300">
+            
+            <!-- Login Modal Overlay for Admin -->
+            <div id="adminLoginModal" class="bg-white rounded-3xl shadow-2xl max-w-md mx-auto p-8 sm:p-10 border border-slate-100 text-center mt-12">
+                <div class="mx-auto w-16 h-16 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center mb-4 shadow-inner">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                </div>
+                <h2 class="text-2xl font-bold text-slate-900">Admin Authentication</h2>
+                <p class="text-sm text-slate-500 mt-1.5 mb-6">Enter password <span class="font-mono bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded-md font-bold">2020</span> to view collected form responses in Excel format.</p>
+                
+                <form id="adminLoginForm" class="space-y-4">
+                    <input type="password" id="adminPasswordInput" required 
+                        class="block w-full px-4 py-3.5 border border-slate-300 rounded-xl shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-center text-lg tracking-widest bg-slate-50/50"
+                        placeholder="••••">
+                    <p id="adminErrorMsg" class="text-xs font-semibold text-rose-600 hidden">Incorrect password. Please try again.</p>
+                    <button type="submit" class="w-full py-3.5 px-4 border border-transparent rounded-xl shadow-lg text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 transition shadow-indigo-200">
+                        Access Admin Excel Log
+                    </button>
+                </form>
+            </div>
+
+            <!-- Admin Dashboard (Hidden until password verified) -->
+            <div id="adminDashboard" class="hidden space-y-6">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-6 sm:p-8 rounded-3xl shadow-xl border border-slate-100">
+                    <div>
+                        <div class="flex items-center space-x-3">
+                            <h2 class="text-xl sm:text-2xl font-bold text-slate-900">Admin Excel Continuous Log</h2>
+                            <span class="px-3 py-1 bg-emerald-100 text-emerald-800 rounded-full text-xs font-bold tracking-wide uppercase shadow-sm">Verified</span>
+                        </div>
+                        <p class="text-xs sm:text-sm text-slate-500 mt-1">All submissions from the public form are displayed here in real time.</p>
+                    </div>
+                    <div class="flex items-center space-x-3 w-full sm:w-auto">
+                        <button onclick="exportToExcel()" class="flex-1 sm:flex-none inline-flex items-center justify-center px-5 py-3 border border-transparent text-sm font-semibold rounded-xl shadow-lg text-white bg-emerald-600 hover:bg-emerald-700 transition shadow-emerald-200">
+                            <svg class="-ml-1 mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                            Download Excel (.xlsx)
+                        </button>
+                        <button onclick="lockAdmin()" class="px-4 py-3 border border-slate-300 rounded-xl text-sm font-semibold text-slate-700 hover:bg-slate-100 transition shadow-sm">
+                            Lock Portal
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Spreadsheet Data Table -->
+                <div class="bg-white shadow-2xl rounded-3xl overflow-hidden border border-slate-100">
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-slate-200">
+                            <thead class="bg-slate-50">
+                                <tr>
+                                    <th class="px-6 py-4 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">#</th>
+                                    <th class="px-6 py-4 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">Full Name</th>
+                                    <th class="px-6 py-4 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">Registration Number</th>
+                                    <th class="px-6 py-4 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">Contact</th>
+                                    <th class="px-6 py-4 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">Graduation Status</th>
+                                    <th class="px-6 py-4 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">Signature</th>
+                                    <th class="px-6 py-4 text-left text-xs font-bold text-slate-600 uppercase tracking-wider">Timestamp</th>
+                                    <th class="px-6 py-4 text-right text-xs font-bold text-slate-600 uppercase tracking-wider">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="adminTableBody" class="bg-white divide-y divide-slate-100">
+                                <tr id="adminEmptyRow">
+                                    <td colspan="8" class="px-6 py-16 text-center text-sm text-slate-400 font-medium">No form submissions received yet.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <script>
+        // Tab Switching Logic with styling active states
+        function switchTab(tab) {
+            const formSection = document.getElementById('formSection');
+            const adminSection = document.getElementById('adminSection');
+            const navFormBtn = document.getElementById('navFormBtn');
+            const navAdminBtn = document.getElementById('navAdminBtn');
+
+            if (tab === 'form') {
+                formSection.classList.remove('hidden');
+                adminSection.classList.add('hidden');
+                navFormBtn.className = "px-4 py-2 rounded-lg text-sm font-semibold bg-white text-indigo-700 shadow-sm transition-all duration-200";
+                navAdminBtn.className = "px-4 py-2 rounded-lg text-sm font-semibold text-indigo-100 hover:text-white transition-all duration-200";
+            } else {
+                formSection.classList.add('hidden');
+                adminSection.classList.remove('hidden');
+                navAdminBtn.className = "px-4 py-2 rounded-lg text-sm font-semibold bg-white text-indigo-700 shadow-sm transition-all duration-200";
+                navFormBtn.className = "px-4 py-2 rounded-lg text-sm font-semibold text-indigo-100 hover:text-white transition-all duration-200";
+            }
+        }
+
+        // Initialize Signature Pad
+        const canvas = document.getElementById('signatureCanvas');
+        function resizeCanvas() {
+            const ratio = Math.max(window.devicePixelRatio || 1, 1);
+            canvas.width = canvas.offsetWidth * ratio;
+            canvas.height = canvas.offsetHeight * ratio;
+            canvas.getContext("2d").scale(ratio, ratio);
+        }
+        window.addEventListener("resize", resizeCanvas);
+        resizeCanvas();
+
+        const signaturePad = new SignaturePad(canvas, {
+            backgroundColor: 'rgb(255, 255, 255)'
+        });
+
+        document.getElementById('clearSignature').addEventListener('click', function () {
+            signaturePad.clear();
+        });
+
+        // Load entries from localStorage
+        function getStoredEntries() {
+            const data = localStorage.getItem('portal_entries_v2');
+            return data ? JSON.parse(data) : [];
+        }
+
+        function saveEntries(entries) {
+            localStorage.setItem('portal_entries_v2', JSON.stringify(entries));
+        }
+
+        // Handle Public Form Submission
+        const publicForm = document.getElementById('publicForm');
+        const successAlert = document.getElementById('successAlert');
+
+        publicForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            if (signaturePad.isEmpty()) {
+                alert("Please provide your signature before submitting.");
+                return;
+            }
+
+            const fullName = document.getElementById('fullName').value.trim();
+            const regNumber = document.getElementById('regNumber').value.trim();
+            const contact = document.getElementById('contact').value.trim();
+            const graduationStatus = document.getElementById('graduationStatus').value;
+            const signature = signaturePad.toDataURL('image/png');
+
+            const entries = getStoredEntries();
+            const newEntry = {
+                id: entries.length + 1,
+                fullName,
+                regNumber,
+                contact,
+                graduationStatus,
+                signature,
+                timestamp: new Date().toLocaleString()
+            };
+
+            entries.push(newEntry);
+            saveEntries(entries);
+
+            // Reset form & signature
+            publicForm.reset();
+            signaturePad.clear();
+
+            // Show success message
+            successAlert.classList.remove('hidden');
+            setTimeout(() => {
+                successAlert.classList.add('hidden');
+            }, 4000);
+        });
+
+        document.getElementById('resetFormBtn').addEventListener('click', function() {
+            publicForm.reset();
+            signaturePad.clear();
+        });
+
+        // Admin Authentication
+        const adminLoginForm = document.getElementById('adminLoginForm');
+        const adminPasswordInput = document.getElementById('adminPasswordInput');
+        const adminErrorMsg = document.getElementById('adminErrorMsg');
+        const adminLoginModal = document.getElementById('adminLoginModal');
+        const adminDashboard = document.getElementById('adminDashboard');
+
+        adminLoginForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            if (adminPasswordInput.value.trim() === "2020") {
+                adminLoginModal.classList.add('hidden');
+                adminDashboard.classList.remove('hidden');
+                adminErrorMsg.classList.add('hidden');
+                adminPasswordInput.value = '';
+                renderAdminTable();
+            } else {
+                adminErrorMsg.classList.remove('hidden');
+                adminPasswordInput.focus();
+            }
+        });
+
+        function lockAdmin() {
+            adminDashboard.classList.add('hidden');
+            adminLoginModal.classList.remove('hidden');
+            adminPasswordInput.focus();
+        }
+
+        // Render Admin Table
+        function renderAdminTable() {
+            const entries = getStoredEntries();
+            const tableBody = document.getElementById('adminTableBody');
+
+            if (entries.length === 0) {
+                tableBody.innerHTML = `<tr id="adminEmptyRow"><td colspan="8" class="px-6 py-16 text-center text-sm text-slate-400 font-medium">No form submissions received yet.</td></tr>`;
+                return;
+            }
+
+            tableBody.innerHTML = '';
+            entries.forEach((entry, index) => {
+                const isReady = entry.graduationStatus === 'Ready';
+                const badgeClass = isReady ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800';
+
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50/80 transition-colors";
+                tr.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-slate-900">${index + 1}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-slate-800">${escapeHtml(entry.fullName)}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-mono text-indigo-600">${escapeHtml(entry.regNumber)}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-600">${escapeHtml(entry.contact)}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm">
+                        <span class="px-3 py-1 rounded-full text-xs font-bold ${badgeClass}">${escapeHtml(entry.graduationStatus || 'N/A')}</span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
+                        <img src="${entry.signature}" alt="Signature" class="h-10 border border-slate-200 rounded-lg bg-white p-1 shadow-sm">
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-xs text-slate-500 font-medium">${entry.timestamp}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <button onclick="deleteEntry(${index})" class="text-rose-600 hover:text-rose-900 font-semibold px-3 py-1 bg-rose-50 rounded-lg transition">Delete</button>
+                    </td>
+                `;
+                tableBody.appendChild(tr);
+            });
+        }
+
+        function deleteEntry(index) {
+            if (confirm("Are you sure you want to delete this entry?")) {
+                let entries = getStoredEntries();
+                entries.splice(index, 1);
+                entries.forEach((item, idx) => { item.id = idx + 1; });
+                saveEntries(entries);
+                renderAdminTable();
+            }
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+            return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+        }
+
+        // Export to Excel using SheetJS
+        function exportToExcel() {
+            const entries = getStoredEntries();
+            if (entries.length === 0) {
+                alert("No entries to export.");
+                return;
+            }
+
+            const exportData = entries.map((entry, index) => ({
+                "No.": index + 1,
+                "Full Name": entry.fullName,
+                "Registration Number": entry.regNumber,
+                "Contact": entry.contact,
+                "Ready for Graduation": entry.graduationStatus,
+                "Signature Status": "Signed",
+                "Timestamp": entry.timestamp
+            }));
+
+            const worksheet = XLSX.utils.json_to_sheet(exportData);
+            worksheet['!cols'] = [
+                {wch: 6},  // No.
+                {wch: 25}, // Full Name
+                {wch: 20}, // Reg Number
+                {wch: 25}, // Contact
+                {wch: 22}, // Ready for Graduation
+                {wch: 18}, // Signature Status
+                {wch: 22}  // Timestamp
+            ];
+
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, "Graduation Log");
+
+            const dateStr = new Date().toISOString().slice(0, 10);
+            XLSX.writeFile(workbook, `Graduation_Admin_Log_${dateStr}.xlsx`);
+        }
+    </script>
+</body>
+</html>
